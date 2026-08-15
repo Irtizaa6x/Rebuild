@@ -92,8 +92,14 @@ class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
             PDO::ATTR_STRINGIFY_FETCHES  => false,
-            PDO::SQLITE_ATTR_OPEN_FLAGS  => SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE,
+            // The constant PDO::SQLITE_ATTR_OPEN_FLAGS may not be defined in all PHP versions.
+            // If it exists, we can use it; otherwise, skip it.
         ];
+
+        // Add the SQLite open flags only if the constant is defined
+        if (defined('PDO::SQLITE_ATTR_OPEN_FLAGS')) {
+            $options[PDO::SQLITE_ATTR_OPEN_FLAGS] = SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE;
+        }
 
         try {
             $this->pdo = new PDO($dsn, null, null, $options);
