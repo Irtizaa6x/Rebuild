@@ -8,16 +8,15 @@
  * @version 1.0
  */
 
-// --- Define admin context for included files ---
+// --- Define admin context ---
 define('IRTIJA_ADMIN', true);
 
-// --- Include authentication and database helpers ---
+// --- Include required files ---
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/db.php';
 
 // --- Check if the system requires first-run setup ---
 if (admin_requires_setup()) {
-    // Redirect to the setup page if no admin user exists
     header('Location: setup.php');
     exit;
 }
@@ -42,7 +41,8 @@ $errorMessage = '';
 $successMessage = '';
 
 // --- Handle login form submission ---
-if (admin_is_post()) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !admin_validate_csrf($_POST['csrf_token'])) {
         $errorMessage = 'Invalid security token. Please try again.';
@@ -55,7 +55,7 @@ if (admin_is_post()) {
         if ($result['success']) {
             // Login successful, redirect to dashboard
             $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
-            // Prevent open redirects: only allow relative paths or safe domains
+            // Prevent open redirects: only allow relative paths
             if (strpos($redirect, 'http') === 0) {
                 $redirect = 'index.php';
             }
@@ -79,20 +79,20 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login · IrtiJa</title>
     <link rel="icon" type="image/png" href="../irtija.png" />
-    
+
     <!-- Google Fonts (matching main site) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet" />
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 
-    <!-- Admin Login Styles (self-contained for simplicity) -->
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="assets/admin.css" />
+
     <style>
-        /* ============================================================
-           ADMIN LOGIN — Clean, minimal, brand-consistent
-           ============================================================ */
+        /* Minimal fallback styles in case admin.css is missing */
         * {
             margin: 0;
             padding: 0;
@@ -108,7 +108,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
             justify-content: center;
             min-height: 100vh;
             padding: 1.5rem;
-            background-image: 
+            background-image:
                 radial-gradient(ellipse at 20% 30%, rgba(212, 168, 83, 0.04) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 70%, rgba(26, 122, 116, 0.03) 0%, transparent 50%);
         }
@@ -132,7 +132,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
             text-decoration: none;
         }
@@ -325,6 +325,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
 <body>
 
     <div class="login-card" role="main" aria-labelledby="login-heading">
+
         <!-- Brand -->
         <a href="../index.php" class="login-brand" aria-label="IrtiJa home">
             <img src="../logo.png" alt="IrtiJa Logo" />
@@ -346,6 +347,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
 
         <!-- Login Form -->
         <form class="login-form" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?><?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>" autocomplete="off">
+
             <!-- CSRF Token -->
             <?php echo admin_csrf_field(); ?>
 
@@ -369,9 +371,10 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
         <div class="login-footer">
             <a href="../index.php"><i class="fas fa-arrow-left"></i> Back to site</a>
         </div>
+
     </div>
 
-    <!-- Optional: Auto-focus username on load -->
+    <!-- Auto-focus username on load -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const usernameInput = document.getElementById('username');
