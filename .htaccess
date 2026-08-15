@@ -1,0 +1,196 @@
+# ============================================================
+#   IRTIJA — ROOT .HTACCESS
+#   Security & Performance Configuration
+#   For InfinityFree shared hosting (Apache)
+# ============================================================
+
+# ------------------------------------------------------------
+#  1.  DISABLE DIRECTORY LISTING
+# ------------------------------------------------------------
+Options -Indexes
+
+# ------------------------------------------------------------
+#  2.  SERVER SIGNATURE
+# ------------------------------------------------------------
+ServerSignature Off
+
+# ------------------------------------------------------------
+#  3.  CUSTOM ERROR DOCUMENTS
+# ------------------------------------------------------------
+ErrorDocument 404 /404.php
+ErrorDocument 403 /404.php
+ErrorDocument 500 /404.php
+
+# ------------------------------------------------------------
+#  4.  PROTECT SENSITIVE FILES
+# ------------------------------------------------------------
+
+# Block access to database files
+<FilesMatch "\.(db|sqlite|sqlite3)$">
+    Require all denied
+</FilesMatch>
+
+# Block access to configuration and sensitive PHP files
+<FilesMatch "^(config\.php|auth\.php|db\.php|setup\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Block backup files, temporary files, and editor swap files
+<FilesMatch "\.(bak|backup|tmp|swp|old|orig|save|~)$">
+    Require all denied
+</FilesMatch>
+
+# Block dot files (like .env, .git, etc.)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Block files with no extension (potential executables)
+<FilesMatch "^[^.]+$">
+    Require all denied
+</FilesMatch>
+
+# Block access to .htaccess itself
+<Files ".htaccess">
+    Require all denied
+</Files>
+
+# ------------------------------------------------------------
+#  5.  PROTECT THE DATABASE DIRECTORY
+# ------------------------------------------------------------
+<Directory "database">
+    Require all denied
+</Directory>
+
+# ------------------------------------------------------------
+#  6.  PROTECT THE ADMIN DIRECTORY
+# ------------------------------------------------------------
+# NOTE: Admin authentication is handled by PHP sessions.
+# This rule ensures that anyone trying to directly access
+# admin/ without going through login.php is denied.
+# The admin pages themselves require authentication via PHP.
+<Directory "admin">
+    # Block direct access to .php files except login.php and setup.php
+    # (The PHP files themselves handle authentication internally)
+    <FilesMatch "\.(php)$">
+        Require all granted
+    </FilesMatch>
+</Directory>
+
+# ------------------------------------------------------------
+#  7.  PROTECT UPLOADS — Prevent script execution
+# ------------------------------------------------------------
+<Directory "uploads">
+    # Prevent PHP execution in uploads directory
+    <FilesMatch "\.(php|phtml|php3|php4|php5|phar|shtml|pl|py|sh|cgi)$">
+        Require all denied
+    </FilesMatch>
+    # Block files with no extension
+    <FilesMatch "^[^.]+$">
+        Require all denied
+    </FilesMatch>
+</Directory>
+
+# ------------------------------------------------------------
+#  8.  SECURITY HEADERS (mod_headers must be enabled)
+# ------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Enable XSS protection
+    Header set X-XSS-Protection "1; mode=block"
+
+    # Block iframe embedding (Clickjacking protection)
+    Header set X-Frame-Options "DENY"
+
+    # Referrer policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Content Security Policy (basic, can be refined)
+    # Allow self and trusted CDNs (Google Fonts, Font Awesome, Cloudflare)
+    # This is intentionally permissive for your current setup
+    # but can be tightened as needed.
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.tiny.cloud https://www.google.com https://www.gstatic.com https://apis.google.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'; frame-src https://www.youtube.com https://player.vimeo.com;"
+</IfModule>
+
+# ------------------------------------------------------------
+#  9.  CACHE STATIC ASSETS (mod_expires)
+# ------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Cache images for 1 year
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # Cache CSS and JavaScript for 1 month
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+
+    # Cache fonts for 1 year
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+
+    # Cache HTML for 1 hour
+    ExpiresByType text/html "access plus 1 hour"
+
+    # Cache PDFs and documents for 1 week
+    ExpiresByType application/pdf "access plus 1 week"
+</IfModule>
+
+# ------------------------------------------------------------
+#  10. GZIP COMPRESSION (mod_deflate)
+# ------------------------------------------------------------
+<IfModule mod_deflate.c>
+    # Compress text, HTML, CSS, JavaScript, JSON, XML, and fonts
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/rss+xml application/atom+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject application/font-ttf application/font-woff
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ------------------------------------------------------------
+#  11. URL REWRITING (mod_rewrite)
+# ------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent rewriting for actual files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Optional: Blog post detail rewriting
+    # /blog/my-post-slug → /blog-detail.php?slug=my-post-slug
+    # Only if you want clean blog URLs
+    # RewriteRule ^blog/([a-z0-9-]+)$ /blog-detail.php?slug=$1 [L,QSA]
+
+    # Optional: Clean admin URLs
+    # If you want to hide .php extensions
+    # RewriteRule ^admin/([a-z-]+)$ /admin/$1.php [L]
+
+    # Force HTTPS (uncomment if your hosting supports SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # Redirect root to index.php if needed (handle clean URLs)
+    # RewriteRule ^$ /index.php [L]
+</IfModule>
+
+# ------------------------------------------------------------
+#  12. DISABLE TRACE/TRACK METHODS (Security)
+# ------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+</IfModule>
