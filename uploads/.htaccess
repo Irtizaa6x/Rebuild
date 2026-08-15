@@ -1,0 +1,17 @@
+# ============================================================
+#   UPLOADS .HTACCESS
+#   Security: Prevent script execution and directory listing
+# ============================================================
+
+# Prevent directory listing
+Options -Indexes
+
+# Block PHP and other executable files
+<FilesMatch "\.(php|phtml|php3|php4|php5|phar|shtml|pl|py|sh|cgi)$">
+    Require all denied
+</FilesMatch>
+
+# Block files with no extension (potential executables)
+<FilesMatch "^[^.]+$">
+    Require all denied
+</FilesMatch>
