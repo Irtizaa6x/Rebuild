@@ -1,0 +1,1408 @@
+/* ============================================================
+   IRTIJA ADMIN — GLOBAL STYLESHEET
+   Version 1.0 · Professional, Clean, Responsive
+   Palette: Deep Teal (#004643) · Gold (#D4A853)
+   Fonts: Inter (Body) · Playfair Display (Headings)
+   ============================================================ */
+
+/* ============================================================
+   1.  CSS VARIABLES — DESIGN TOKENS
+   ============================================================ */
+
+:root {
+    /* ----- Primary Colors (Admin) ----- */
+    --admin-primary: #004643;
+    --admin-primary-light: #1A7A74;
+    --admin-primary-dark: #002B29;
+    --admin-primary-rgb: 0, 70, 67;
+
+    /* ----- Secondary Colors (Gold) ----- */
+    --admin-gold: #D4A853;
+    --admin-gold-light: #E8D5A8;
+    --admin-gold-dark: #B8923A;
+
+    /* ----- Neutrals ----- */
+    --admin-bg: #F0EDE5;
+    --admin-bg-card: #FCFAF5;
+    --admin-bg-sidebar: #004643;
+    --admin-bg-surface: #F5F2EA;
+    --admin-bg-input: #FFFFFF;
+
+    --admin-border: #D5CFC4;
+    --admin-border-subtle: rgba(213, 207, 196, 0.20);
+    --admin-border-light: rgba(213, 207, 196, 0.30);
+
+    /* ----- Text Colors ----- */
+    --admin-text-primary: #1A1A1A;
+    --admin-text-secondary: #4A4A4A;
+    --admin-text-muted: #7A7A7A;
+    --admin-text-light: rgba(255, 255, 255, 0.80);
+    --admin-text-light-muted: rgba(255, 255, 255, 0.45);
+
+    /* ----- Feedback Colors ----- */
+    --admin-success: #2B8C6E;
+    --admin-success-bg: rgba(43, 140, 110, 0.06);
+    --admin-success-border: rgba(43, 140, 110, 0.15);
+    --admin-error: #C44A4A;
+    --admin-error-bg: rgba(196, 74, 74, 0.06);
+    --admin-error-border: rgba(196, 74, 74, 0.15);
+    --admin-warning: #D4A853;
+    --admin-info: #4A8AA8;
+
+    /* ----- Shadows ----- */
+    --admin-shadow-sm: 0 1px 4px rgba(0, 70, 67, 0.04);
+    --admin-shadow-md: 0 6px 28px rgba(0, 70, 67, 0.06);
+    --admin-shadow-lg: 0 16px 64px rgba(0, 70, 67, 0.08);
+    --admin-shadow-card: 0 2px 12px rgba(0, 70, 67, 0.02);
+
+    /* ----- Borders & Radius ----- */
+    --admin-radius-sm: 8px;
+    --admin-radius: 12px;
+    --admin-radius-lg: 16px;
+    --admin-radius-xl: 24px;
+    --admin-radius-full: 9999px;
+
+    /* ----- Transitions ----- */
+    --admin-transition-fast: 0.15s ease;
+    --admin-transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --admin-transition-slow: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* ----- Spacing ----- */
+    --admin-space-1: 0.25rem;
+    --admin-space-2: 0.5rem;
+    --admin-space-3: 0.75rem;
+    --admin-space-4: 1rem;
+    --admin-space-5: 1.5rem;
+    --admin-space-6: 2rem;
+    --admin-space-7: 2.5rem;
+    --admin-space-8: 3rem;
+
+    /* ----- Sidebar ----- */
+    --admin-sidebar-width: 260px;
+    --admin-header-height: 72px;
+
+    /* ----- Z-Index ----- */
+    --admin-z-modal: 1000;
+    --admin-z-dropdown: 100;
+    --admin-z-sticky: 50;
+}
+
+/* ============================================================
+   2.  RESET & BASE (Admin Overrides)
+   ============================================================ */
+
+.admin-wrapper * {
+    box-sizing: border-box;
+}
+
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--admin-bg);
+    color: var(--admin-text-secondary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   3.  SIDEBAR
+   ============================================================ */
+
+.admin-sidebar {
+    width: var(--admin-sidebar-width);
+    background: var(--admin-bg-sidebar);
+    color: var(--admin-text-light);
+    padding: var(--admin-space-6) var(--admin-space-5);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--admin-radius-full);
+}
+
+/* Brand */
+.admin-sidebar .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-space-3);
+    margin-bottom: var(--admin-space-7);
+    text-decoration: none;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.admin-sidebar .brand img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(212, 168, 83, 0.20);
+    transition: border-color var(--admin-transition-fast);
+}
+
+.admin-sidebar .brand:hover img {
+    border-color: var(--admin-gold);
+}
+
+.admin-sidebar .brand .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.admin-sidebar .brand .brand-name .gold {
+    color: var(--admin-gold);
+}
+
+/* Navigation */
+.admin-sidebar .nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-sidebar .nav-heading {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: var(--admin-space-5);
+    margin-bottom: var(--admin-space-2);
+    padding: 0 var(--admin-space-2);
+}
+
+.admin-sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-space-3);
+    padding: var(--admin-space-2) var(--admin-space-3);
+    border-radius: var(--admin-radius);
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    transition: all var(--admin-transition-fast);
+    font-size: 0.875rem;
+    font-weight: 500;
+    position: relative;
+}
+
+.admin-sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.admin-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.admin-sidebar .nav-link:focus-visible {
+    outline: 2px solid var(--admin-gold);
+    outline-offset: -2px;
+}
+
+.admin-sidebar .nav-link.active {
+    background: rgba(212, 168, 83, 0.12);
+    color: var(--admin-gold);
+    font-weight: 600;
+}
+
+.admin-sidebar .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3px;
+    background: var(--admin-gold);
+    border-radius: 0 var(--admin-radius-full) var(--admin-radius-full) 0;
+}
+
+.admin-sidebar .nav-link.logout {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding-top: var(--admin-space-4);
+    color: rgba(255, 255, 255, 0.30);
+    font-weight: 400;
+}
+
+.admin-sidebar .nav-link.logout:hover {
+    background: rgba(196, 74, 74, 0.10);
+    color: #FF6B6B;
+}
+
+/* ============================================================
+   4.  MAIN CONTENT
+   ============================================================ */
+
+.admin-main {
+    flex: 1;
+    padding: var(--admin-space-6) var(--admin-space-7);
+    max-width: calc(100% - var(--admin-sidebar-width));
+    min-width: 0;
+}
+
+/* ============================================================
+   5.  ADMIN HEADER / TOP BAR
+   ============================================================ */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--admin-space-6);
+    padding-bottom: var(--admin-space-4);
+    border-bottom: 1px solid var(--admin-border-subtle);
+    flex-wrap: wrap;
+    gap: var(--admin-space-3);
+}
+
+.admin-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--admin-text-primary);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.admin-header .user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-space-3);
+    font-size: 0.875rem;
+    color: var(--admin-text-muted);
+}
+
+.admin-header .user-info i {
+    font-size: 1.2rem;
+    color: var(--admin-gold);
+}
+
+/* ============================================================
+   6.  STATS CARDS (Dashboard)
+   ============================================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--admin-space-4);
+    margin-bottom: var(--admin-space-6);
+}
+
+.stat-card {
+    background: var(--admin-bg-card);
+    border-radius: var(--admin-radius-lg);
+    padding: var(--admin-space-4) var(--admin-space-5);
+    border: 1px solid var(--admin-border-subtle);
+    box-shadow: var(--admin-shadow-card);
+    transition: transform var(--admin-transition-fast), box-shadow var(--admin-transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-md);
+}
+
+.stat-card .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--admin-primary);
+    line-height: 1.1;
+    margin-bottom: 2px;
+}
+
+.stat-card .stat-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--admin-text-muted);
+}
+
+.stat-card .stat-icon {
+    float: right;
+    font-size: 1.6rem;
+    color: rgba(212, 168, 83, 0.12);
+}
+
+/* ============================================================
+   7.  CARDS
+   ============================================================ */
+
+.card {
+    background: var(--admin-bg-card);
+    border-radius: var(--admin-radius-lg);
+    border: 1px solid var(--admin-border-subtle);
+    padding: var(--admin-space-5) var(--admin-space-6);
+    box-shadow: var(--admin-shadow-card);
+    margin-bottom: var(--admin-space-5);
+}
+
+.card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin-bottom: var(--admin-space-4);
+}
+
+.card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin-bottom: var(--admin-space-3);
+}
+
+/* ============================================================
+   8.  TABLES
+   ============================================================ */
+
+.table-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    border-radius: var(--admin-radius);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 500px;
+}
+
+.admin-table th {
+    text-align: left;
+    padding: var(--admin-space-3) var(--admin-space-4);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--admin-text-muted);
+    border-bottom: 2px solid var(--admin-border-subtle);
+    background: transparent;
+}
+
+.admin-table td {
+    padding: var(--admin-space-3) var(--admin-space-4);
+    border-bottom: 1px solid var(--admin-border-subtle);
+    vertical-align: middle;
+    color: var(--admin-text-secondary);
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tr:hover td {
+    background: rgba(0, 70, 67, 0.01);
+}
+
+/* Table actions */
+.admin-table .actions {
+    display: flex;
+    gap: var(--admin-space-2);
+    flex-wrap: wrap;
+}
+
+.admin-table .actions a,
+.admin-table .actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--admin-transition-fast);
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+}
+
+.admin-table .actions .btn-edit {
+    background: rgba(26, 122, 116, 0.08);
+    color: var(--admin-primary-light);
+}
+
+.admin-table .actions .btn-edit:hover {
+    background: var(--admin-primary-light);
+    color: #fff;
+}
+
+.admin-table .actions .btn-view {
+    background: rgba(212, 168, 83, 0.08);
+    color: var(--admin-gold-dark);
+}
+
+.admin-table .actions .btn-view:hover {
+    background: var(--admin-gold);
+    color: #fff;
+}
+
+.admin-table .actions .btn-delete {
+    background: rgba(196, 74, 74, 0.08);
+    color: var(--admin-error);
+}
+
+.admin-table .actions .btn-delete:hover {
+    background: var(--admin-error);
+    color: #fff;
+}
+
+/* ============================================================
+   9.  FORMS
+   ============================================================ */
+
+.form-group {
+    margin-bottom: var(--admin-space-4);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--admin-text-secondary);
+    margin-bottom: var(--admin-space-1);
+}
+
+.form-group label .required {
+    color: var(--admin-error);
+    font-weight: 700;
+}
+
+.form-group .help-text {
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    margin-top: var(--admin-space-1);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--admin-space-3) var(--admin-space-4);
+    border: 2px solid var(--admin-border-light);
+    border-radius: var(--admin-radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    background: var(--admin-bg-input);
+    color: var(--admin-text-primary);
+    transition: border-color var(--admin-transition-fast), box-shadow var(--admin-transition-fast);
+    outline: none;
+}
+
+.form-control:focus {
+    border-color: var(--admin-gold);
+    box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.06);
+}
+
+.form-control.error {
+    border-color: var(--admin-error);
+    box-shadow: 0 0 0 4px rgba(196, 74, 74, 0.06);
+}
+
+.form-control.error:focus {
+    border-color: var(--admin-error);
+    box-shadow: 0 0 0 4px rgba(196, 74, 74, 0.10);
+}
+
+select.form-control {
+    appearance: auto;
+    cursor: pointer;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-control-file {
+    display: block;
+    width: 100%;
+    padding: var(--admin-space-3);
+    border: 2px dashed var(--admin-border-light);
+    border-radius: var(--admin-radius);
+    background: var(--admin-bg-surface);
+    cursor: pointer;
+    transition: border-color var(--admin-transition-fast), background var(--admin-transition-fast);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--admin-text-muted);
+}
+
+.form-control-file:hover {
+    border-color: var(--admin-gold);
+    background: rgba(212, 168, 83, 0.02);
+}
+
+.form-control-file:focus-visible {
+    outline: 2px solid var(--admin-gold);
+    outline-offset: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--admin-space-5);
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--admin-space-3);
+    margin-top: var(--admin-space-5);
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   10. BUTTONS
+   ============================================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--admin-space-2);
+    padding: var(--admin-space-2) var(--admin-space-5);
+    border-radius: var(--admin-radius-full);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--admin-transition-fast);
+    min-height: 44px;
+    line-height: 1.4;
+}
+
+.btn i {
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-light));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0, 70, 67, 0.12);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 70, 67, 0.18);
+    color: #fff;
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--admin-gold), var(--admin-gold-dark));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(212, 168, 83, 0.15);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(212, 168, 83, 0.20);
+    color: #fff;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--admin-primary);
+    border: 2px solid var(--admin-primary);
+}
+
+.btn-outline:hover {
+    background: var(--admin-primary);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: rgba(196, 74, 74, 0.08);
+    color: var(--admin-error);
+}
+
+.btn-danger:hover {
+    background: var(--admin-error);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-sm {
+    padding: var(--admin-space-1) var(--admin-space-3);
+    font-size: 0.75rem;
+    min-height: 32px;
+}
+
+.btn-lg {
+    padding: var(--admin-space-3) var(--admin-space-7);
+    font-size: 1rem;
+    min-height: 52px;
+}
+
+/* ============================================================
+   11. MESSAGES / ALERTS
+   ============================================================ */
+
+.message {
+    padding: var(--admin-space-3) var(--admin-space-4);
+    border-radius: var(--admin-radius);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: var(--admin-space-4);
+}
+
+.message.success {
+    background: var(--admin-success-bg);
+    border: 1px solid var(--admin-success-border);
+    color: var(--admin-success);
+}
+
+.message.error {
+    background: var(--admin-error-bg);
+    border: 1px solid var(--admin-error-border);
+    color: var(--admin-error);
+}
+
+.message ul {
+    padding-left: var(--admin-space-5);
+    margin: var(--admin-space-2) 0 0;
+}
+
+.message ul li {
+    margin-bottom: var(--admin-space-1);
+}
+
+/* ============================================================
+   12. STATUS BADGES
+   ============================================================ */
+
+.status-badge {
+    display: inline-block;
+    padding: 0.1rem 0.6rem;
+    border-radius: var(--admin-radius-full);
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.status-badge.published {
+    background: rgba(43, 140, 110, 0.08);
+    color: var(--admin-success);
+}
+
+.status-badge.draft {
+    background: rgba(212, 168, 83, 0.08);
+    color: var(--admin-gold-dark);
+}
+
+.status-badge.ongoing {
+    background: rgba(74, 138, 168, 0.08);
+    color: var(--admin-info);
+}
+
+.status-badge.completed {
+    background: rgba(43, 140, 110, 0.08);
+    color: var(--admin-success);
+}
+
+/* ============================================================
+   13. COVER IMAGE UPLOAD
+   ============================================================ */
+
+.cover-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-space-3);
+}
+
+.cover-preview {
+    max-width: 320px;
+    max-height: 200px;
+    overflow: hidden;
+    border-radius: var(--admin-radius);
+    border: 1px solid var(--admin-border-subtle);
+    background: var(--admin-bg-surface);
+}
+
+.cover-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================================
+   14. GALLERY MANAGEMENT
+   ============================================================ */
+
+.gallery-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-space-3);
+}
+
+.gallery-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--admin-space-2);
+}
+
+.gallery-preview-item {
+    position: relative;
+    border-radius: var(--admin-radius);
+    overflow: hidden;
+    border: 1px solid var(--admin-border-subtle);
+    aspect-ratio: 1 / 1;
+    background: var(--admin-bg-surface);
+}
+
+.gallery-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-preview-item .remove-gallery {
+    position: absolute;
+    top: var(--admin-space-1);
+    right: var(--admin-space-1);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--admin-transition-fast);
+}
+
+.gallery-preview-item .remove-gallery:hover {
+    background: var(--admin-error);
+}
+
+/* ============================================================
+   15. MEDIA GRID
+   ============================================================ */
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--admin-space-4);
+}
+
+.media-item {
+    background: var(--admin-bg-card);
+    border-radius: var(--admin-radius);
+    border: 1px solid var(--admin-border-subtle);
+    overflow: hidden;
+    box-shadow: var(--admin-shadow-card);
+    transition: transform var(--admin-transition-fast), box-shadow var(--admin-transition-fast);
+}
+
+.media-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--admin-shadow-md);
+}
+
+.media-item .media-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: var(--admin-bg-surface);
+}
+
+.media-item .media-info {
+    padding: var(--admin-space-3) var(--admin-space-4);
+}
+
+.media-item .media-info .media-filename {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    word-break: break-all;
+    margin-bottom: var(--admin-space-1);
+}
+
+.media-item .media-info .media-meta {
+    font-size: 0.7rem;
+    color: var(--admin-text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.media-item .media-info .media-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.media-item .media-info .media-meta i {
+    width: 14px;
+    color: var(--admin-border);
+}
+
+.media-item .media-actions {
+    padding: var(--admin-space-2) var(--admin-space-4) var(--admin-space-3);
+    border-top: 1px solid var(--admin-border-subtle);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ============================================================
+   16. EMPTY STATE
+   ============================================================ */
+
+.empty-state {
+    text-align: center;
+    padding: var(--admin-space-7) var(--admin-space-4);
+    color: var(--admin-text-muted);
+}
+
+.empty-state i {
+    font-size: 2.8rem;
+    color: var(--admin-border);
+    margin-bottom: var(--admin-space-3);
+    display: block;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.empty-state a {
+    color: var(--admin-primary-light);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--admin-transition-fast);
+}
+
+.empty-state a:hover {
+    color: var(--admin-gold);
+}
+
+/* ============================================================
+   17. PAGINATION
+   ============================================================ */
+
+.pagination {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-top: var(--admin-space-5);
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--admin-space-2) var(--admin-space-3);
+    border-radius: var(--admin-radius);
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--admin-text-secondary);
+    background: var(--admin-bg-card);
+    border: 1px solid var(--admin-border-subtle);
+    min-width: 38px;
+    transition: all var(--admin-transition-fast);
+    font-family: 'Inter', sans-serif;
+}
+
+.pagination a:hover {
+    background: var(--admin-primary);
+    color: #fff;
+    border-color: var(--admin-primary);
+}
+
+.pagination .active {
+    background: var(--admin-primary);
+    color: #fff;
+    border-color: var(--admin-primary);
+}
+
+.pagination .disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ============================================================
+   18. CONFIRMATION MODAL
+   ============================================================ */
+
+.confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: var(--admin-z-modal);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: var(--admin-space-4);
+}
+
+.confirm-modal.open {
+    display: flex;
+}
+
+.confirm-modal .modal-content {
+    background: var(--admin-bg-card);
+    border-radius: var(--admin-radius-lg);
+    padding: var(--admin-space-6) var(--admin-space-7);
+    max-width: 480px;
+    width: 100%;
+    border: 1px solid var(--admin-border-subtle);
+    box-shadow: var(--admin-shadow-lg);
+    animation: modalFadeIn 0.25s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.confirm-modal .modal-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin-bottom: var(--admin-space-2);
+}
+
+.confirm-modal .modal-content p {
+    color: var(--admin-text-secondary);
+    margin-bottom: var(--admin-space-5);
+    line-height: 1.6;
+}
+
+.confirm-modal .modal-content .modal-actions {
+    display: flex;
+    gap: var(--admin-space-3);
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   19. CROPPER MODAL
+   ============================================================ */
+
+.cropper-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: var(--admin-z-modal);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: var(--admin-space-4);
+}
+
+.cropper-modal.open {
+    display: flex;
+}
+
+.cropper-modal .cropper-container {
+    background: var(--admin-bg-card);
+    border-radius: var(--admin-radius-lg);
+    padding: var(--admin-space-5);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
+    border: 1px solid var(--admin-border-subtle);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+.cropper-modal .cropper-container img {
+    max-width: 100%;
+    display: block;
+}
+
+.cropper-modal .cropper-actions {
+    display: flex;
+    gap: var(--admin-space-3);
+    margin-top: var(--admin-space-4);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   20. RESPONSIVE
+   ============================================================ */
+
+/* Large tablets / small desktops */
+@media (max-width: 1024px) {
+    :root {
+        --admin-sidebar-width: 220px;
+    }
+
+    .admin-main {
+        padding: var(--admin-space-5);
+        max-width: calc(100% - var(--admin-sidebar-width));
+    }
+
+    .admin-sidebar {
+        padding: var(--admin-space-4) var(--admin-space-3);
+    }
+
+    .admin-sidebar .brand .brand-name {
+        font-size: 1.2rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--admin-space-3);
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--admin-space-3);
+    }
+
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+/* Tablets / Mobile */
+@media (max-width: 768px) {
+    .admin-wrapper {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: var(--admin-space-3) var(--admin-space-4);
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--admin-space-2);
+        min-height: 60px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .admin-sidebar .brand {
+        margin-bottom: 0;
+        flex: 1;
+    }
+
+    .admin-sidebar .brand img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .admin-sidebar .brand .brand-name {
+        font-size: 1rem;
+    }
+
+    .admin-sidebar .nav-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 2px;
+        width: 100%;
+        margin-top: var(--admin-space-2);
+    }
+
+    .admin-sidebar .nav-heading {
+        display: none;
+    }
+
+    .admin-sidebar .nav-link {
+        padding: var(--admin-space-1) var(--admin-space-2);
+        font-size: 0.75rem;
+        border-radius: var(--admin-radius-sm);
+    }
+
+    .admin-sidebar .nav-link i {
+        width: 16px;
+        font-size: 0.85rem;
+    }
+
+    .admin-sidebar .nav-link.active::before {
+        display: none;
+    }
+
+    .admin-sidebar .nav-link.logout {
+        margin-top: 0;
+        border-top: none;
+        padding-top: var(--admin-space-1);
+        margin-left: auto;
+    }
+
+    .admin-main {
+        padding: var(--admin-space-3);
+        max-width: 100%;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--admin-space-2);
+        margin-bottom: var(--admin-space-4);
+        padding-bottom: var(--admin-space-3);
+    }
+
+    .admin-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--admin-space-2);
+    }
+
+    .stat-card {
+        padding: var(--admin-space-3);
+    }
+
+    .stat-card .stat-number {
+        font-size: 1.4rem;
+    }
+
+    .card {
+        padding: var(--admin-space-3);
+        border-radius: var(--admin-radius);
+    }
+
+    .card h2 {
+        font-size: 1.1rem;
+    }
+
+    .admin-table {
+        font-size: 0.75rem;
+        min-width: 400px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: var(--admin-space-2) var(--admin-space-3);
+    }
+
+    .admin-table .actions a,
+    .admin-table .actions button {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.4rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--admin-space-2);
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--admin-space-2);
+    }
+
+    .media-item .media-info .media-filename {
+        font-size: 0.7rem;
+    }
+
+    .gallery-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+
+    .confirm-modal .modal-content {
+        padding: var(--admin-space-4);
+        margin: var(--admin-space-2);
+    }
+
+    .cropper-modal .cropper-container {
+        padding: var(--admin-space-3);
+        border-radius: var(--admin-radius);
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    .admin-main {
+        padding: var(--admin-space-2);
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--admin-space-1);
+    }
+
+    .stat-card {
+        padding: var(--admin-space-2);
+        border-radius: var(--admin-radius);
+    }
+
+    .stat-card .stat-number {
+        font-size: 1.2rem;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.65rem;
+    }
+
+    .admin-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .admin-table {
+        font-size: 0.65rem;
+        min-width: 320px;
+    }
+
+    .media-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .media-item .media-thumb {
+        aspect-ratio: 1 / 1;
+    }
+
+    .form-control {
+        font-size: 0.8rem;
+        padding: var(--admin-space-2) var(--admin-space-3);
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: var(--admin-space-2) var(--admin-space-4);
+        min-height: 38px;
+    }
+}
+
+/* ============================================================
+   21. ACCESSIBILITY
+   ============================================================ */
+
+/* Focus indicators */
+:focus-visible {
+    outline: 2px solid var(--admin-gold);
+    outline-offset: 2px;
+    border-radius: var(--admin-radius-sm);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .confirm-modal .modal-content {
+        animation: none !important;
+    }
+}
+
+/* High contrast selection */
+::selection {
+    background: var(--admin-gold);
+    color: var(--admin-primary-dark);
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================================
+   22. RICH TEXT EDITOR OVERRIDES (TinyMCE)
+   ============================================================ */
+
+.tox-tinymce {
+    border-radius: var(--admin-radius) !important;
+    border-color: var(--admin-border-light) !important;
+    box-shadow: var(--admin-shadow-card) !important;
+}
+
+.tox-tinymce:focus-within {
+    border-color: var(--admin-gold) !important;
+    box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.06) !important;
+}
+
+/* ============================================================
+   23. SCROLLBAR STYLING (WebKit)
+   ============================================================ */
+
+.admin-main::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: var(--admin-bg-surface);
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: var(--admin-border);
+    border-radius: var(--admin-radius-full);
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: var(--admin-text-muted);
+}
