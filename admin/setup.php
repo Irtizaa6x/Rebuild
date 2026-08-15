@@ -73,38 +73,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             try {
                 // Ensure database schema exists
-                db_ensure_ready();
+                if (!db_ensure_ready()) {
+                    $errors[] = 'Database schema could not be created. Please check logs.';
+                } else {
+                    // Hash the password
+                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-                // Hash the password
-                $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                    // Insert the admin user
+                    db_insert('admin_user', [
+                        'username' => $username,
+                        'password_hash' => $passwordHash,
+                    ]);
 
-                // Insert the admin user
-                db_insert('admin_user', [
+                    $success = true;
+
+                    // Store success message in session for login page
+                    $_SESSION['setup_success'] = 'Admin account created successfully. You can now log in.';
+
+                    // Redirect to login page after a short delay (handled by JS or meta refresh)
+                    // We'll show a success message and a link to login
+                }
+            } catch (PDOException $e) {
+                // Log the actual error for debugging
+                db_log_error('Failed to create admin user during setup', [
                     'username' => $username,
-                    'password_hash' => $passwordHash,
+                    'error' => $e->getMessage(),
+                    'code' => $e->getCode()
                 ]);
 
-                $success = true;
-
-                // Store success message in session for login page
-                $_SESSION['setup_success'] = 'Admin account created successfully. You can now log in.';
-
-                // Redirect to login page after a short delay (handled by JS or meta refresh)
-                // We'll show a success message and a link to login
-
-            } catch (PDOException $e) {
+                // Display a more specific error message based on the exception
                 if ($e->getCode() === '23000') {
                     $errors[] = 'Username already exists. Please choose a different username.';
                 } else {
-                    db_log_error('Failed to create admin user during setup', [
-                        'username' => $username,
-                        'error' => $e->getMessage()
-                    ]);
-                    $errors[] = 'Database error: Could not create admin user.';
+                    // Show the actual error message in development
+                    if (IRTIJA_DEBUG) {
+                        $errors[] = 'Database error: ' . $e->getMessage();
+                    } else {
+                        $errors[] = 'Database error: Could not create admin user.';
+                    }
                 }
             }
         }
     }
+}
+
+// --- Check if the database file is writable ---
+$dbPath = IRTIJA_DB_PATH;
+$dbDir = dirname($dbPath);
+$dbWritable = is_writable($dbDir);
+if (!$dbWritable) {
+    $errors[] = 'Database directory (' . $dbDir . ') is not writable. Please check permissions.';
 }
 
 ?><!DOCTYPE html>
