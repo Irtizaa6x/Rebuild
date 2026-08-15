@@ -1,381 +1,261 @@
 <?php
 /**
- * index.php
+ * admin/index.php
  *
- * Main homepage for IrtiJa portfolio.
+ * Main administrator dashboard for the IrtiJa admin panel.
+ * Displays blog statistics, recent posts, and quick action links.
  *
  * @package IrtiJa
  * @version 1.0
  */
 
-// --- Page-specific variables for the header ---
-$page_title       = 'IrtiJa · Cybersecurity & CSE Portfolio';
-$page_description = 'Md. Irtija Azad Talha — CSE student at Green University of Bangladesh, cybersecurity enthusiast, BNCC cadet. Explore my work and journey.';
-$page_canonical   = 'https://irtizaa6x.github.io/';
-$current_page     = 'index';
+// --- Define admin context ---
+define('IRTIJA_ADMIN', true);
 
-// --- Include the shared header ---
-include 'header.php';
-?>
+// --- Include required files ---
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/db.php';
 
-    <!-- ============================================================
-         HERO — Full viewport, magnetic first impression
-         ============================================================ -->
-    <section class="hero" id="hero" aria-labelledby="hero-title">
-        <div class="container hero-inner">
-            <div class="hero-content">
-                <!-- Badge / status -->
-                <div class="hero-badge">
-                    <span class="live-dot"></span>
-                    Open for collaborations &amp; internships
-                </div>
+// --- Require authentication ---
+admin_require_login();
 
-                <!-- Main headline -->
-                <h1 class="hero-title" id="hero-title">
-                    Md. Irtija<br />
-                    <span class="gold">Azad Talha</span>
-                </h1>
+// --- Fetch statistics ---
+$totalPosts = 0;
+$publishedPosts = 0;
+$draftPosts = 0;
+$totalCategories = 0;
+$totalMedia = 0;
+$recentPosts = [];
 
-                <!-- Tagline -->
-                <p class="hero-subtitle">
-                    Computer Science &amp; Engineering · Cybersecurity
-                </p>
+try {
+    $totalPosts = (int) db_fetch_column('SELECT COUNT(*) FROM posts');
+    $publishedPosts = (int) db_fetch_column("SELECT COUNT(*) FROM posts WHERE status = 'published'");
+    $draftPosts = (int) db_fetch_column("SELECT COUNT(*) FROM posts WHERE status = 'draft'");
+    $totalCategories = (int) db_fetch_column('SELECT COUNT(*) FROM categories');
 
-                <!-- Description -->
-                <p class="hero-description">
-                    Building secure digital futures — one line of code at a time.
-                    CSE student at Green University of Bangladesh, cybersecurity
-                    enthusiast, and BNCC cadet.
-                </p>
+    // Count media files (covers + gallery)
+    $coverCount = 0;
+    $galleryCount = 0;
+    $coverDir = __DIR__ . '/../uploads/covers/';
+    $galleryDir = __DIR__ . '/../uploads/gallery/';
+    if (is_dir($coverDir)) {
+        $coverCount = count(glob($coverDir . '*.{jpg,jpeg,png,gif,webp,avif}', GLOB_BRACE));
+    }
+    if (is_dir($galleryDir)) {
+        $galleryCount = count(glob($galleryDir . '*.{jpg,jpeg,png,gif,webp,avif}', GLOB_BRACE));
+    }
+    $totalMedia = $coverCount + $galleryCount;
 
-                <!-- CTAs -->
-                <div class="hero-actions">
-                    <a href="#about" class="btn btn-primary">
-                        <i class="fas fa-arrow-down"></i> Explore My Work
-                    </a>
-                    <a href="contact.php" class="btn btn-secondary">
-                        <i class="fas fa-paper-plane"></i> Let's Connect
-                    </a>
-                </div>
-            </div>
+    // Fetch recent posts (5 most recent by created_at)
+    $recentPosts = db_fetch_all(
+        "SELECT id, title, slug, status, created_at 
+         FROM posts 
+         ORDER BY created_at DESC 
+         LIMIT 5"
+    );
+} catch (PDOException $e) {
+    db_log_error('Dashboard stats query failed', ['error' => $e->getMessage()]);
+}
 
-            <!-- Hero visual (profile photo + decorative shapes) -->
-            <div class="hero-visual">
-                <div class="hero-image-wrapper">
-                    <img src="Talha.jpg" alt="Md. Irtija Azad Talha — profile photo" class="hero-image" width="400" height="400" loading="eager" />
-                    <div class="hero-ring"></div>
-                    <div class="hero-ring hero-ring-2"></div>
-                </div>
+// --- CSRF token for forms (if needed later) ---
+$csrfToken = admin_csrf_token();
+
+?><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard · IrtiJa Admin</title>
+    <link rel="icon" type="image/png" href="../irtija.png" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="assets/admin.css" />
+
+    <style>
+        /* Minimal fallback styles in case admin.css is missing */
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 260px; background: #004643; color: rgba(255,255,255,0.80); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; }
+        .admin-sidebar .brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem; text-decoration: none; color: #fff; }
+        .admin-sidebar .brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(212,168,83,0.20); }
+        .admin-sidebar .brand .brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: #fff; }
+        .admin-sidebar .brand .brand-name .gold { color: #D4A853; }
+        .admin-sidebar .nav-section { display: flex; flex-direction: column; gap: 0.25rem; }
+        .admin-sidebar .nav-heading { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.30); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .admin-sidebar .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.8rem; border-radius: 10px; color: rgba(255,255,255,0.60); text-decoration: none; transition: all 0.2s ease; font-size: 0.9rem; font-weight: 500; }
+        .admin-sidebar .nav-link i { width: 20px; text-align: center; font-size: 1rem; }
+        .admin-sidebar .nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .admin-sidebar .nav-link.active { background: rgba(212,168,83,0.12); color: #D4A853; font-weight: 600; }
+        .admin-sidebar .nav-link.logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 1rem; color: rgba(255,255,255,0.40); }
+        .admin-sidebar .nav-link.logout:hover { background: rgba(196,74,74,0.10); color: #FF6B6B; }
+        .admin-main { flex: 1; padding: 2rem 2.5rem; max-width: calc(100% - 260px); }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(213,207,196,0.20); }
+        .admin-header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: #1A1A1A; letter-spacing: -0.02em; }
+        .admin-header .user-info { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #7A7A7A; }
+        .admin-header .user-info i { font-size: 1.2rem; color: #D4A853; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
+        .stat-card { background: #FCFAF5; border-radius: 16px; padding: 1.25rem 1.5rem; border: 1px solid rgba(213,207,196,0.20); box-shadow: 0 2px 12px rgba(0,70,67,0.02); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,70,67,0.04); }
+        .stat-card .stat-number { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 800; color: #004643; line-height: 1.1; margin-bottom: 0.25rem; }
+        .stat-card .stat-label { font-size: 0.85rem; font-weight: 500; color: #7A7A7A; }
+        .stat-card .stat-icon { float: right; font-size: 1.8rem; color: rgba(212,168,83,0.15); }
+        .recent-posts-section { background: #FCFAF5; border-radius: 16px; border: 1px solid rgba(213,207,196,0.20); padding: 1.5rem 2rem; box-shadow: 0 2px 12px rgba(0,70,67,0.02); }
+        .recent-posts-section .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .recent-posts-section .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #1A1A1A; }
+        .recent-posts-section .section-header a { font-size: 0.85rem; font-weight: 600; color: #1A7A74; text-decoration: none; transition: color 0.2s ease; }
+        .recent-posts-section .section-header a:hover { color: #D4A853; }
+        .post-list { list-style: none; padding: 0; margin: 0; }
+        .post-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid rgba(213,207,196,0.10); }
+        .post-list li:last-child { border-bottom: none; }
+        .post-list .post-title { font-weight: 500; color: #1A1A1A; text-decoration: none; transition: color 0.2s ease; }
+        .post-list .post-title:hover { color: #D4A853; }
+        .post-list .post-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: #7A7A7A; }
+        .post-list .post-status { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+        .post-status.published { background: rgba(43,140,110,0.08); color: #2B8C6E; }
+        .post-status.draft { background: rgba(212,168,83,0.08); color: #B8923A; }
+        .post-list .post-date { font-size: 0.75rem; color: #B0B0B0; }
+        .empty-state { text-align: center; padding: 2rem 0; color: #B0B0B0; }
+        .empty-state i { font-size: 2.5rem; color: rgba(213,207,196,0.30); margin-bottom: 0.5rem; display: block; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .btn-primary { background: linear-gradient(135deg, #004643, #1A7A74); color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,70,67,0.20); }
+        .btn-secondary { background: linear-gradient(135deg, #D4A853, #B8923A); color: #fff; }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,168,83,0.20); }
+        .btn-outline { background: transparent; color: #004643; border: 2px solid #004643; }
+        .btn-outline:hover { background: #004643; color: #fff; }
+        .quick-actions { margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+        @media (max-width: 1024px) { .admin-sidebar { width: 220px; padding: 1.5rem 1rem; } .admin-main { padding: 1.5rem; max-width: calc(100% - 220px); } }
+        @media (max-width: 768px) { .admin-wrapper { flex-direction: column; } .admin-sidebar { width: 100%; height: auto; position: relative; padding: 1rem 1.5rem; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 60px; } .admin-sidebar .brand { margin-bottom: 0; flex: 1; } .admin-sidebar .nav-section { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; width: 100%; margin-top: 0.5rem; } .admin-sidebar .nav-heading { display: none; } .admin-sidebar .nav-link { padding: 0.4rem 0.7rem; font-size: 0.8rem; } .admin-sidebar .nav-link.logout { margin-top: 0; border-top: none; padding-top: 0; margin-left: auto; } .admin-main { padding: 1rem; max-width: 100%; } .admin-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; } .admin-header h1 { font-size: 1.6rem; } .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } .stat-card .stat-number { font-size: 1.8rem; } .recent-posts-section { padding: 1.25rem; } .post-list li { flex-direction: column; align-items: flex-start; gap: 0.25rem; } .post-list .post-meta { flex-wrap: wrap; gap: 0.5rem; } }
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; } .stat-card { padding: 1rem; } .stat-card .stat-number { font-size: 1.5rem; } .admin-main { padding: 0.75rem; } }
+    </style>
+</head>
+<body>
+
+<div class="admin-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+        <a href="index.php" class="brand" aria-label="IrtiJa Admin">
+            <img src="../logo.png" alt="IrtiJa Logo" />
+            <span class="brand-name">Irti<span class="gold">Ja</span></span>
+        </a>
+
+        <div class="nav-section">
+            <div class="nav-heading">Main</div>
+            <a href="index.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="posts.php" class="nav-link"><i class="fas fa-newspaper"></i> Posts</a>
+            <a href="categories.php" class="nav-link"><i class="fas fa-tags"></i> Categories</a>
+            <a href="media.php" class="nav-link"><i class="fas fa-images"></i> Media</a>
+            <div class="nav-heading">Account</div>
+            <a href="logout.php" class="nav-link logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" role="main">
+
+        <div class="admin-header">
+            <h1>Dashboard</h1>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <?php echo htmlspecialchars(admin_get_username() ?? 'Admin'); ?>
             </div>
         </div>
 
-        <!-- Subtle scroll indicator -->
-        <div class="scroll-indicator" aria-hidden="true">
-            <span class="scroll-line"></span>
-            <span class="scroll-label">Scroll</span>
-        </div>
-    </section>
-
-    <!-- ============================================================
-         QUICK STATS — Count-up placeholders
-         ============================================================ -->
-    <section class="stats" aria-label="Quick statistics">
-        <div class="container stats-grid">
-            <div class="stat-item">
-                <span class="stat-number" data-count="3.14">3.14</span>
-                <span class="stat-label">CGPA</span>
-                <span class="stat-sub">B.Sc. in CSE</span>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
+                <div class="stat-number"><?php echo $totalPosts; ?></div>
+                <div class="stat-label">Total Posts</div>
             </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="5">0</span>
-                <span class="stat-label">Projects</span>
-                <span class="stat-sub">&amp; Counting</span>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle" style="color:#2B8C6E;"></i></div>
+                <div class="stat-number"><?php echo $publishedPosts; ?></div>
+                <div class="stat-label">Published</div>
             </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="4">0</span>
-                <span class="stat-label">Certifications</span>
-                <span class="stat-sub">Cybersecurity</span>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-edit" style="color:#D4A853;"></i></div>
+                <div class="stat-number"><?php echo $draftPosts; ?></div>
+                <div class="stat-label">Drafts</div>
             </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="2">0</span>
-                <span class="stat-label">Years of Study</span>
-                <span class="stat-sub">CSE Program</span>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-tags" style="color:#1A7A74;"></i></div>
+                <div class="stat-number"><?php echo $totalCategories; ?></div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-images" style="color:#B8923A;"></i></div>
+                <div class="stat-number"><?php echo $totalMedia; ?></div>
+                <div class="stat-label">Media Files</div>
             </div>
         </div>
-    </section>
 
-    <!-- ============================================================
-         ABOUT ME — Professional introduction
-         ============================================================ -->
-    <section class="about" id="about" aria-labelledby="about-title">
-        <div class="container">
-            <div class="about-grid">
-                <!-- Left column: main text -->
-                <div class="about-content">
-                    <span class="section-tag">About Me</span>
-                    <h2 class="section-title" id="about-title">
-                        I'm Irtija.
-                    </h2>
-                    <p class="about-lead">
-                        I'm a CSE student at Green University of Bangladesh with
-                        a singular focus: <strong>cybersecurity</strong>. I'm
-                        driven by the challenge of protecting digital systems
-                        and understanding how networks are secured at every
-                        layer.
-                    </p>
-                    <p>
-                        When I'm not studying cryptography or network security,
-                        I'm leading teams as a BNCC cadet — where I've honed
-                        discipline, leadership, and the ability to perform under
-                        pressure.
-                    </p>
-                    <p class="about-mission">
-                        <i class="fas fa-bullseye gold-icon"></i>
-                        <strong>My mission:</strong> to build the technical
-                        depth and real-world experience needed to become a
-                        cybersecurity professional who makes a tangible
-                        difference.
-                    </p>
-                    <div class="about-actions">
-                        <a href="education.php" class="btn btn-primary">
-                            <i class="fas fa-graduation-cap"></i> View Education
-                        </a>
-                        <a href="experience.php" class="btn btn-ghost">
-                            <i class="fas fa-briefcase"></i> Experience
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Right column: quick personal details -->
-                <div class="about-details">
-                    <div class="detail-card">
-                        <div class="detail-item">
-                            <i class="fas fa-user"></i>
-                            <div>
-                                <span class="detail-label">Name</span>
-                                <span class="detail-value">Md. Irtija Azad Talha</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-map-pin"></i>
-                            <div>
-                                <span class="detail-label">Location</span>
-                                <span class="detail-value">Dhaka, Bangladesh</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-university"></i>
-                            <div>
-                                <span class="detail-label">University</span>
-                                <span class="detail-value">Green University of Bangladesh</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <div>
-                                <span class="detail-label">Focus</span>
-                                <span class="detail-value">Cybersecurity &amp; Network Security</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-flag"></i>
-                            <div>
-                                <span class="detail-label">Nationality</span>
-                                <span class="detail-value">Bangladeshi</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-         FEATURED SKILLS — Preview of capabilities
-         ============================================================ -->
-    <section class="featured-skills" aria-labelledby="skills-title">
-        <div class="container">
+        <!-- Recent Posts -->
+        <div class="recent-posts-section">
             <div class="section-header">
-                <span class="section-tag">Capabilities</span>
-                <h2 class="section-title" id="skills-title">
-                    Core Skills
-                </h2>
-                <p class="section-subtitle">
-                    A preview of the technologies and competencies I work with
-                    every day.
-                </p>
+                <h2>Recent Posts</h2>
+                <a href="posts.php"><i class="fas fa-arrow-right"></i> View All</a>
             </div>
 
-            <div class="skills-preview-grid">
-                <!-- Cybersecurity -->
-                <div class="skill-preview-card fade-up">
-                    <div class="skill-preview-icon">
-                        <i class="fas fa-user-secret"></i>
-                    </div>
-                    <h3>Cybersecurity</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Threat Analysis</span>
-                        <span class="skill-tag">Vulnerability Assessment</span>
-                        <span class="skill-tag">Defensive Strategies</span>
-                        <span class="skill-tag">Penetration Testing</span>
-                        <span class="skill-tag">Incident Response</span>
-                    </div>
+            <?php if (empty($recentPosts)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-pen-fancy"></i>
+                    <p>No posts yet. <a href="create-post.php" style="color:#1A7A74;font-weight:600;">Create your first post</a></p>
                 </div>
-
-                <!-- Web Dev & Programming -->
-                <div class="skill-preview-card fade-up">
-                    <div class="skill-preview-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h3>Web Dev &amp; Programming</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">C</span>
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">HTML5</span>
-                        <span class="skill-tag">CSS3</span>
-                    </div>
-                </div>
-
-                <!-- Networking -->
-                <div class="skill-preview-card fade-up">
-                    <div class="skill-preview-icon">
-                        <i class="fas fa-network-wired"></i>
-                    </div>
-                    <h3>Networking &amp; Web Tech</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">TCP/IP</span>
-                        <span class="skill-tag">DNS</span>
-                        <span class="skill-tag">Firewalls</span>
-                        <span class="skill-tag">Cloud Computing</span>
-                        <span class="skill-tag">Linux</span>
-                    </div>
-                </div>
-
-                <!-- Professional Skills -->
-                <div class="skill-preview-card fade-up">
-                    <div class="skill-preview-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <h3>Professional Skills</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Leadership</span>
-                        <span class="skill-tag">Teamwork</span>
-                        <span class="skill-tag">Discipline</span>
-                        <span class="skill-tag">Time Management</span>
-                        <span class="skill-tag">Communication</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="skills-cta">
-                <a href="skills.php" class="btn btn-ghost">
-                    <i class="fas fa-arrow-right"></i> View All Capabilities
-                </a>
-            </div>
+            <?php else: ?>
+                <ul class="post-list">
+                    <?php foreach ($recentPosts as $post): ?>
+                        <li>
+                            <a href="edit.php?id=<?php echo (int)$post['id']; ?>" class="post-title">
+                                <?php echo htmlspecialchars($post['title']); ?>
+                            </a>
+                            <div class="post-meta">
+                                <span class="post-status <?php echo $post['status'] === 'published' ? 'published' : 'draft'; ?>">
+                                    <?php echo htmlspecialchars($post['status'] ?? 'draft'); ?>
+                                </span>
+                                <span class="post-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <?php echo date('M j, Y', strtotime($post['created_at'])); ?>
+                                </span>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
         </div>
-    </section>
 
-    <!-- ============================================================
-         FEATURED EXPERIENCE — Preview of timeline
-         ============================================================ -->
-    <section class="featured-experience" aria-labelledby="experience-title">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">Experience</span>
-                <h2 class="section-title" id="experience-title">
-                    Professional Journey
-                </h2>
-                <p class="section-subtitle">
-                    A snapshot of my activities and leadership roles.
-                </p>
-            </div>
-
-            <div class="experience-preview">
-                <!-- Entry 1: GUCC Cyber Security Society -->
-                <div class="exp-preview-item fade-up">
-                    <div class="exp-preview-marker"></div>
-                    <div class="exp-preview-content">
-                        <span class="exp-preview-date">2025 – Present</span>
-                        <h3>Member · GUCC Cyber Security Society</h3>
-                        <p>
-                            Actively participating in cybersecurity workshops,
-                            CTF competitions, and network security discussions.
-                            Learning the fundamentals of threat analysis and
-                            defensive strategies.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Entry 2: BNCC -->
-                <div class="exp-preview-item fade-up">
-                    <div class="exp-preview-marker"></div>
-                    <div class="exp-preview-content">
-                        <span class="exp-preview-date">2024 – Present</span>
-                        <h3>Cadet · BNCC Green University Platoon</h3>
-                        <p>
-                            Developed leadership, discipline, and teamwork
-                            through rigorous training. Performed under pressure
-                            and learned the value of responsibility and
-                            integrity.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Entry 3: B.Sc. in CSE -->
-                <div class="exp-preview-item fade-up">
-                    <div class="exp-preview-marker"></div>
-                    <div class="exp-preview-content">
-                        <span class="exp-preview-date">2025 – Present</span>
-                        <h3>B.Sc. in Computer Science &amp; Engineering</h3>
-                        <p>
-                            Green University of Bangladesh — CGPA 3.14.
-                            Coursework includes Data Structures, Discrete
-                            Mathematics, Linear Algebra, and Network Security.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="experience-cta">
-                <a href="experience.php" class="btn btn-primary">
-                    <i class="fas fa-arrow-right"></i> Full Experience Timeline
-                </a>
-            </div>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="create-post.php" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Post
+            </a>
+            <a href="categories.php" class="btn btn-secondary">
+                <i class="fas fa-tags"></i> Manage Categories
+            </a>
+            <a href="media.php" class="btn btn-outline">
+                <i class="fas fa-images"></i> Media Library
+            </a>
         </div>
-    </section>
 
-    <!-- ============================================================
-         CALL TO ACTION — Final engagement
-         ============================================================ -->
-    <section class="cta-section" aria-labelledby="cta-title">
-        <div class="container">
-            <div class="cta-card">
-                <div class="cta-content">
-                    <h2 id="cta-title">Let's Build Something Secure Together</h2>
-                    <p>
-                        Whether it's a collaboration, a cybersecurity project,
-                        or just a conversation about tech — I'd love to hear
-                        from you.
-                    </p>
-                    <div class="cta-actions">
-                        <a href="contact.php" class="btn btn-cta-primary">
-                            <i class="fas fa-paper-plane"></i> Get in Touch
-                        </a>
-                        <a href="blog.php" class="btn btn-cta-secondary">
-                            <i class="fas fa-code-branch"></i> View My Work
-                        </a>
-                    </div>
-                </div>
-                <!-- Decorative element -->
-                <div class="cta-decoration" aria-hidden="true">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-            </div>
-        </div>
-    </section>
+    </main>
 
-<?php
-// --- Include the shared footer ---
-include 'footer.php';
-?>
+</div>
+
+<!-- Admin JavaScript (if needed) -->
+<script src="assets/admin.js"></script>
+
+<!-- Inline CSRF token for potential AJAX -->
+<script>
+    const csrfToken = '<?php echo $csrfToken; ?>';
+</script>
+
+</body>
+</html>
